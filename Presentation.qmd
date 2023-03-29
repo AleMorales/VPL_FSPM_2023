@@ -1,0 +1,207 @@
+---
+title: "What is VPL?"
+author: 
+    - name: "Alejandro Morales Sierra"
+      affiliation: "Centre for Crop Systems Analysis - Wageningen University"
+date: last-modified
+date-format: "DD/MM/YYYY"
+format: 
+    revealjs:
+        navigation-mode: vertical
+        scrollable: true
+        progress: true
+        width: 1920
+        selfcontained: true
+---
+
+# The Virtual Plant Laboratory (VPL)
+
+## What is VPL?
+
+* A **package** written in the Julia language  
+* The **API** offers **data structures** and **algorithms** to help you build, simulate and visualize FSP models 
+    * Development is driven by the needs of our research  
+    * Plant-level models where functionality is defined at the organ and plant level  
+    * Emphasis on plant-plant and plant-environment interactions
+    * Crop systems (vertical farming, greenhouse, mono- and intercropping, perennials)
+
+## What is the *VPLverse*?
+
+* VPL + website + other packages
+
+* Optional **packages** to help build FSP models:  
+    * **Sky.jl** to solar radiation and generate light sources for ray tracing    
+    * **Ecophys.jl** that contains modules for ecophysiological processes  
+    * **VPLTutorials** with examples and tutorials on how to use VPL
+
+* A website with all the documentation and tutorials on VPLverse
+
+## What VPL will never be
+
+* A Julia implementation of other FSPM software
+* A modelling language
+* A large model with lots of plugins
+* A standalone modelling studio/platform
+* An attempt to support every possible FSP model  
+
+## Why not a standalone studio?
+
+When building an studio/platform you are responsible for:  
+
+* Platform compatibility (Windows, Mac, Linux...)  
+* Visualization (3D rendering, graphs)   
+* Input (text editor)  
+* Code organization (projects)  
+* Graphical user interface to organize input/output (GUI)  
+
+Since VPL is just a Julia package we get (most of) this for “free”
+
+How do I do X in VPL = How do I do X in Julia (in most cases)
+
+## Why not a modelling language?
+
+Domain specific languages have advantages:  
+
+* Succinct and powerful in describing elaborate computations 
+* Can generate optimized code  
+* The user can avoid learning technical details or even progranming 
+
+And disadvantages:
+
+* It can be more limiting than an API-based approach  
+* The code being executed is not visible to the user  (*magic* happening in the background, many assumptions being made)    
+* A new language requires its own development support (syntax highlighting, code completion, Github copilot? GPT?, etc.)    
+* The user needs to learn the domain specific language which is not useful for anything else  
+
+## Why am I building VPL?
+
+* I wanted to have an FSPM platform where I could:
+
+    * Use it as part of a reproducible computing workflow for plotting, I/O, analysis...  
+    * Easily extend it without touching the source code     
+    * Read the source code and understand what is going on  
+    * Read the documentation and understand how it works  
+    * Use it to teach FSPM to students  
+    * Run it anywhere (Windows, Mac, Linux, HPC, Cloud, etc.)  
+
+
+#
+
+![](img/Julia.png){fig-align="center"}
+
+## What is Julia?
+
+* A dynamic JIT compiled programming language
+* Julia 0.0 beta released in 2012 by 4 people @ MIT
+* Julia 1.0 in 2018 (stable since then)
+* Reads like Matlab-Python, feels like R, runs like C
+* It is very easy to integrate with R and Python, native support for C/C++
+
+## Why Julia?
+
+* Classic dynamic languages (R, Python, Matlab)
+    * Rapid development
+    * Easy to learn
+    * Code runs slow
+* Two language problem: Bottlenecks lowered to classic static languages (C/C++/Fortran)
+    * Need to maintain code in two languages, plus the interface
+    * To really benefit, most of the FSPM would have to be lowered
+* Julia was designed to solve the two language problem
+    * Write all the code in a single language
+    * Achieve performance by incrementally improving the code
+
+# VPL design
+
+## VPL overview
+
+VPL addresses four main components in FSPM:
+
+- **Graphs** to represent the topology of the plants  
+    - Inspired by Relational Growth Grammars (GroIMP) but procedural  
+- **Geometry** to represent the 3D structure of the plants plus other scene elements 
+    - Inspired by turtle graphics and based on triangular meshes compatible with other Julia packages  
+- Interactive **3D visualization** of the structure  
+    - Based on Makie.jl (support OpenGL and WebGL) 
+- Radiation transport within the scene
+    - Multi-threaded, multi-wavelength **Monte Carlo ray tracer** 
+
+## Graphs
+
+- A tree graph represents **topology** of a plant (nodes, internodes, leaves, etc.)
+
+- A node can store any **user-defined data type** (`<: Node`) as well as the graph itself (`vars`)
+
+- Each data type has a method that defines its **geometry, material and color** (`feed!`)
+
+- Graph edges created by a simply **node algebra**:
+    - Phytomer: `Node() + (Bud(), Leaf()) + Internode() + Meristem() `
+
+- User defines functions to implement:
+
+    - **Relational growth rules** can replace nodes by subgraphs (`Rule` & `rewrite!`)
+
+    - **Relational queries** can extract combinations of nodes (`Query` & `apply`)
+
+- Different graphs can be queried/rewritten in **parallel** (multi-threading)
+
+## Geometry
+
+- A `Scene` contains
+    - 3D **triangular mesh** 
+    - Optional **colors** (for rendering)
+    - Optional **materials** (for ray tracing)
+
+- Scenes are created from graphs using `feed!`
+
+- Individual elements can be added to the scene manually (`add!`)
+
+- Mesh constructors are provided for common shapes (cylinder, rectangle, etc.)
+
+- Meshes can be exported/imported to/from other formats (e.g. OBJ, STL, PLY)
+
+## Visualization
+
+- Graphs can be rendered as **networks diagrams** and labels can be customized
+
+- Scenes can be rendered with a simple **3D interactive engine**
+
+- All visualization based on Makie.jl that supports OpenGL and WebGL
+
+- Snapshots can be exported
+
+## Ray tracing
+
+- Multi-threaded, multi-wavelength forward **Monte Carlo ray tracer**
+
+- **Acceleration** with SAH-based Bounding Volume Hierarchy
+
+- Common **radiation sources** are available (point, directional, area, line)
+
+- Common **materials** are available (Black, Sensor, Lambertian, Modified Phong)
+
+- Users can add new materials and light sources and choose the number generator (not documented yet)
+
+- **Sky.jl** creates light sources for diffuse and direct solar radiation from location and day of year
+
+- Use instancing to approximate large canopies (**grid cloner**)
+
+- Could have multiple ray tracers in the same model
+
+# Future roadmap
+
+## Short term
+
+- Finish tutorials
+- Develop reference models and extend Ecophys.jl and Sky.jl 
+- Technical documentation for developers  
+- Avoid forced dependency on OpenGL/X11  
+- Move rendering and raytracing to separate packages in the VPLverse  
+- Prepare package for collaboration and register it  
+
+## Long term
+
+- Plant internal transport via ODEs  
+- Interface with environment (soil and atmosphere)  
+    - Mapping 3D geometry to a 3D grid  
+    - Support PDE models for environment  
+- Hybrid light models (e.g. FSPM + MAESPA-like models, Raycaster + radiative transfer)  
