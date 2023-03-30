@@ -24,6 +24,7 @@ pkg"add https://github.com/AleMorales/Ecophys.jl.git; precompile"
 pkg"add https://github.com/AleMorales/Sky.jl.git; precompile"
 pkg"add Distributions"
 pkg"add Plots"
+pkg"add FastGaussQuadrature"
 ```
 
 * Add suport for Jupyter notebooks (replace `"4"` with the number of threads you
