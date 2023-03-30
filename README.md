@@ -31,7 +31,7 @@ pkg"add FastGaussQuadrature"
 want to use in your machine).
 
 ```julia
-pkg"IJulia"
+pkg"add IJulia"
 using IJulia
 installkernel("Julia (multi-threaded)", env=Dict("JULIA_NUM_THREADS"=>"4"))
 ```
