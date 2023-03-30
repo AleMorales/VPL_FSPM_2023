@@ -1,15 +1,17 @@
----
-title: "VPL FSPM 2023"
-author: 
-    - name: "Alejandro Morales Sierra"
-      affiliation: "Centre for Crop Systems Analysis - Wageningen University"
-date: last-modified
-execute: 
-  cache: true
----
+# VPL FSPM 2023
 
 This notebook contains several tutorials taken from the website of the Virtual
 Plant Laboratory (VPL) at [virtualplantlab.org](http://virtualplantlab.com/).
+The following tutorials are included:
+
+* [Tutorial 01: Algae growth](#Tutorial-01:-Algae-growth)
+* [Tutorial 02: Snowflakes](#Tutorial-02:-Snowflakes)
+* [Tutorial 03: Single tree](#Tutorial-03:-Single-tree)
+* [Tutorial 04: Forest](#Tutorial-04:-Forest)
+* [Tutorial 05: Growth-driven forest](#Tutorial-05:-Growth-driven-forest)
+* [Tutorial 06: RUE-driven forest](#Tutorial-06:-RUE-driven-forest)
+* [Tutorial 07: Canopy photosynthesis](#Tutorial-07:-Canopy-photosynthesis)
+* [Tutorial 08: Ground cover calculations](#Tutorial-08:-Ground-cover-calculations)
 
 ## Setup
 
@@ -22,7 +24,7 @@ Pkg.add(url = "https://github.com/AleMorales/VPL.git")
 Pkg.add(url = "https://github.com/AleMorales/Ecophys.git")
 Pkg.add(url = "https://github.com/AleMorales/Sky.git")
 # Additional packages
-for pkg in ["Plots", "Distributions", "Benchmarktools"]
+for pkg in ["Plots", "Distributions", "FastGaussQuadrature"]
     Pkg.add(pkg)
 end
 ```
@@ -110,7 +112,7 @@ rewrite!(organism)
 Since there was only one node of type `A`, the only rule that was applied was `rule1`, so the graph should now have two nodes of types `A` and `B`, respectively. We can confirm this by drawing the graph. We do this with the function `draw()` which will always generate the same representation of the graph, but different options are available depending on the context where the code is executed. By default, `draw()` will create a new window where an interactive version of the graph will be drawn and one can zoom and pan with the mouse (in this online document a static version is shown, see [Backends](../../manual/Visualization/index.qmd) for details):
 
 ```{julia}
-draw(organism, backend = "web")
+draw(organism, backend = "web", resolution = (800,600))
 ```
 
 Notice that each node in the network representation is labelled with the type of node (`A` or `B` in this case) and a number in parenthesis. This number is a unique identifier associated to each node and it is useful for debugging purposes (this will be explained in more advanced examples).
@@ -126,12 +128,12 @@ end
 Add we can verify that the graph grew as expected:
 
 ```{julia}
-draw(organism, backend = "web")
+draw(organism, backend = "web", resolution = (800,600))
 ```
 
 The network is rather boring as the system is growing linearly (no branching) but it already illustrates how graphs can grow rapidly in just a few iterations. Remember that the interactive visualization allows adjusting the zoom, which is handy when graphs become large.
 
-## Tutorial 02:Snowflakes
+## Tutorial 02: Snowflakes
 
 In this example, we create a Koch snowflake, which is one of the earliest fractals to be described. The Koch snowflake is a closed curve composed on multiple of segments of different lengths. Starting with an equilateral triangle, each segment in the snowflake is replaced by four segments of smaller length arrange in a specific manner. Graphically, the first four iterations of the Koch snowflake construction process result in the following figures (the green segments are shown as guides but they are not part of the snowflake):
 
@@ -206,14 +208,14 @@ Note that the argument `move = true` indicates that the turtle should move forwa
 After defining the method, we can now call the function render on the graph to generate a 3D interactive image of the Koch snowflake in the current state
 
 ```{julia}
-render(Koch, axes = false)
+render(Koch, axes = false, backend = "web", resolution = (800,600))
 ```
 
 This renders the initial triangle of the construction procedure of the Koch snowflake. Let's execute the rules once to verify that we get the 2nd iteration (check the figure at the beginning of this document):
 
 ```{julia}
 rewrite!(Koch)
-render(Koch, axes = false)
+render(Koch, axes = false, backend = "web", resolution = (800,600))
 ```
 
 And two more times
@@ -222,7 +224,7 @@ And two more times
 for i in 1:3
     rewrite!(Koch)
 end
-render(Koch, axes = false)
+render(Koch, axes = false, backend = "web", resolution = (800,600))
 ```
 
 ### Other snowflake fractals
@@ -243,13 +245,13 @@ The axiom is the same, but now the edges added by the rule will generate the edg
 ```{julia}
 # First iteration
 rewrite!(Koch2)
-render(Koch2, axes = false)
+render(Koch2, axes = false, backend = "web", resolution = (800,600))
 # Second iteration
 rewrite!(Koch2)
-render(Koch2, axes = false)
+render(Koch2, axes = false, backend = "web", resolution = (800,600))
 # Third iteration
 rewrite!(Koch2)
-render(Koch2, axes = false)
+render(Koch2, axes = false, backend = "web", resolution = (800,600))
 ```
 
 This is know as [Koch antisnowflake](https://mathworld.wolfram.com/KochAntisnowflake.html). We could also easily generate a [Cesàro fractal](https://mathworld.wolfram.com/CesaroFractal.html) by also changing the axiom:
@@ -257,7 +259,7 @@ This is know as [Koch antisnowflake](https://mathworld.wolfram.com/KochAntisnowf
 ```{julia}
 axiomCesaro = sn.E(L) + RU(90.0) + sn.E(L) + RU(90.0) + sn.E(L) + RU(90.0) + sn.E(L)
 Cesaro = Graph(axiom = axiomCesaro, rules = rule2)
-render(Cesaro, axes = false)
+render(Cesaro, axes = false, backend = "web", resolution = (800,600))
 ```
 
 And, as before, let's go through the first three iterations
@@ -265,13 +267,13 @@ And, as before, let's go through the first three iterations
 ```{julia}
 # First iteration
 rewrite!(Cesaro)
-render(Cesaro, axes = false)
+render(Cesaro, axes = false, backend = "web", resolution = (800,600))
 # Second iteration
 rewrite!(Cesaro)
-render(Cesaro, axes = false)
+render(Cesaro, axes = false, backend = "web", resolution = (800,600))
 # Third iteration
 rewrite!(Cesaro)
-render(Cesaro, axes = false)
+render(Cesaro, axes = false, backend = "web", resolution = (800,600))
 ```
 
 ## Tutorial 03: Single tree
@@ -453,23 +455,23 @@ newtree = simulate(tree, getInternode, 2)
 The binary tree after two iterations has two branches, as expected:
 
 ```{julia}
-render(newtree)
+render(newtree, backend = "web", resolution = (800,600))
 ```
 
 Notice how the lengths of the prisms representing internodes decreases as the branching order increases, as the internodes are younger (i.e. were generated fewer generations ago). Further steps will generate a structure that is more tree-like.
 
 ```{julia}
 newtree = simulate(newtree, getInternode, 15)
-render(newtree)
+render(newtree, backend = "web", resolution = (800,600))
 ```
 
-## Tutorial 04: A descriptive forest
+## Tutorial 04: Forest
 
 In this example we extend the tree example into a forest, where
 each tree is described by a separate graph object and parameters driving the
 growth of these trees vary across individuals following a predefined distribution.
-The data types, rendering methods and growth rules are the same as in the binary
-tree example:
+The data types, rendering methods and growth rules are the same as in the tree 
+example:
 
 ```{julia}
 using VPL
@@ -665,7 +667,7 @@ And we can render the forest with the function `render` as in the binary tree
 example but passing the whole forest at once
 
 ```{julia}
-render(newforest)
+render(newforest, backend = "web", resolution = (800,600))
 ```
 
 If we iterate 4 more iterations we will start seeing the different individuals
@@ -673,7 +675,7 @@ diverging in size due to the differences in growth rates
 
 ```{julia}
 newforest = [simulate(tree, getInternode, 15) for tree in newforest];
-render(newforest)
+render(newforest, backend = "web", resolution = (800,600))
 ```
 
 ### Multithreaded simulation
@@ -691,7 +693,7 @@ newforest = deepcopy(forest)
 @threads for i in 1:length(forest)
     newforest[i] = simulate(forest[i], getInternode, 6)
 end
-render(newforest, parallel = true)
+render(newforest, parallel = true, backend = "web", resolution = (800,600))
 ```
 
 An alternative way to perform the simulation is to have an outer loop for each timestep and an internal loop over the different trees. Although this approach is not required for this simple model, most FSP models will probably need such a scheme as growth of each individual plant will depend on competition for resources with neighbouring plants. In this case, this approach would look as follows:
@@ -703,7 +705,7 @@ for step in 1:15
         newforest[i] = simulate(newforest[i], getInternode, 1)
     end
 end
-render(newforest, parallel = true)
+render(newforest, parallel = true, backend = "web", resolution = (800,600))
 ```
 
 ### Customizing the scene
@@ -743,7 +745,7 @@ Howver, it may be distracting for the visualization. It turns out that we can tu
 `show_axes = false`:
 
 ```{julia}
-render(scene, axes = false)
+render(scene, axes = false, backend = "web", resolution = (800,600))
 ```
 
 We may also want to save a screenshot of the scene. For this, we need to store the output of the `render` function.
@@ -754,7 +756,7 @@ compute the resolution from a physical width and height in cm and a dpi (e.g., u
 
 ```{julia}
 res = calculate_resolution(width = 16.0, height = 16.0, dpi = 1_000)
-output = render(scene, axes = false, resolution = res)
+output = render(scene, axes = false, resolution = res, backend = "web", resolution = (800,600))
 export_scene(scene = output, filename = "nice_trees.png") 
 ```
 
@@ -776,22 +778,20 @@ using VPL
 using Base.Threads: @threads
 using Plots
 import Random
-using FastGaussQuadrature
 using Distributions
 Random.seed!(123456789)
 ```
 
-## Model definition
+### Model definition
 
-### Node types
+#### Node types
 
 The data types needed to simulate the trees are given in the following
 module. The differences with respect to the previous example are:
-
-    - Meristems do not produce phytomers every day
-    - A relative sink strength approach is used to allocate biomass to organs
-    - The geometry of the organs is updated based on the new biomass
-    - Bud break probability is a function of distance to apical meristem
+  - Meristems do not produce phytomers every day
+  - A relative sink strength approach is used to allocate biomass to organs
+  - The geometry of the organs is updated based on the new biomass
+  - Bud break probability is a function of distance to apical meristem
 
 ```{julia}
 # Data types
@@ -848,7 +848,7 @@ end
 import .TreeTypes
 ```
 
-### Geometry
+#### Geometry
 
 The methods for creating the geometry and color of the tree are the same as in
 the previous example.
@@ -882,7 +882,7 @@ function VPL.feed!(turtle::Turtle, b::TreeTypes.BudNode, vars)
 end
 ```
 
-### Development
+#### Development
 
 The meristem rule is now parameterized by the initial states of the leaves and
 internodes and will only be triggered every X days where X is the plastochron.
@@ -952,7 +952,7 @@ end
 ```
 
 
-### Growth
+#### Growth
 
 We need some functions to compute the length and width of a leaf or internode 
 from its biomass
@@ -1070,7 +1070,7 @@ function size_internodes!(all_internodes, tvars)
 end
 ```
 
-### Daily step
+#### Daily step
 
 All the growth and developmental functions are combined together into a daily
 step function that updates the forest by iterating over the different trees in
@@ -1097,7 +1097,7 @@ function daily_step!(forest)
 end
 ```
 
-### Initialization
+#### Initialization
 
 The trees are initialized in a regular grid with random values for the initial
 orientation and RGR:
@@ -1143,7 +1143,7 @@ end
 ```
 
 
-## Visualization
+### Visualization
 
 As in the previous example, it makes sense to visualize the forest with a soil
 tile beneath it. Unlike in the previous example, we will construct the soil tile
@@ -1161,7 +1161,7 @@ end
 soil_graph = RA(-90.0) + T(Vec(0.0, 10.0, 0.0)) + # Moves into position
              Soil(length = 20.0, width = 20.0) # Draws the soil tile
 soil = Scene(Graph(axiom = soil_graph));
-render(soil, axes = false)
+render(soil, axes = false, backend = "web", resolution = (800,600))
 ```
 
 And the following function renders the entire scene (notice that we need to
@@ -1172,12 +1172,12 @@ or a function):
 function render_forest(forest, soil)
     scene = Scene(vec(forest)) # create scene from forest
     scene = Scene([scene, soil]) # merges the two scenes
-    render(scene)
+    render(scene, backend = "web", resolution = (800,600))
 end
 ```
 
 
-## Retrieving canopy-level data
+### Retrieving canopy-level data
 
 We may want to extract some information at the canopy level such as LAI. This is
 best achieved with a query:
@@ -1194,7 +1194,7 @@ function get_LAI(forest)
 end
 ```
 
-## Simulation
+### Simulation
 
 We can now create a forest of trees on a regular grid:
 
@@ -1230,7 +1230,7 @@ Random.seed!(123456789)
 using Base.Threads: @threads
 ```
 
-## Model definition
+### Model definition
 
 #### Node types
 
@@ -1501,7 +1501,7 @@ function create_raytracer(scene, sources)
     settings = RTSettings(pkill = 0.9, maxiter = 4, nx = 5, ny = 5, dx = 20.0,
                           dy = 20.0, parallel = true)
     RayTracer(scene, sources, settings = settings, acceleration = BVH,
-                     rule = SAH{3}(5, 10));
+                     rule = SAH{6}(1,20));
 end
 ```
 
@@ -1775,7 +1775,7 @@ or a function):
 function render_forest(forest, soil)
     scene = Scene(vec(forest)) # create scene from forest
     scene = Scene([scene, soil]) # merges the two scenes
-    display(render(scene))
+    display(render(scene, backend = "web", resolution = (800,600)))
 end
 ```
 
@@ -1795,3 +1795,506 @@ for i in 1:50
     end
 end
 ```
+
+
+## Tutorial 07: Canopy photosynthesis
+
+In this tutorial we will photosynthesis calculations to the forest model (for
+simplicity we will still grow the trees descriptively, but this could be extended
+to a full growth model including respiration, carbon allocation, etc.).
+
+We start with the code from Tutorial 04 with the following additions:
+
+  * Load the Ecophys.jl package
+  * Add materials to internodes, leaves and soil tile
+  * Keep track of absorbed PAR within each leaf
+  * Compute daily photosynthesis for each leaf using Gaussian-Legendre integration
+  * Integrate to the tree level
+
+```{julia}
+using VPL, Distributions, Plots, Ecophys, Sky, FastGaussQuadrature
+import Base.Threads: @threads
+import Random
+Random.seed!(123456789)
+# Data types
+module TreeTypes
+    import VPL
+    import Ecophys
+    # Meristem
+    struct Meristem <: VPL.Node end
+    # Bud
+    struct Bud <: VPL.Node end
+    # Node
+    struct Node <: VPL.Node end
+    # BudNode
+    struct BudNode <: VPL.Node end
+    # Internode (needs to be mutable to allow for changes over time)
+    Base.@kwdef mutable struct Internode <: VPL.Node
+        length::Float64 = 0.10 # Internodes start at 10 cm
+        mat::VPL.Lambertian{1} = VPL.Lambertian(τ = 0.00, ρ = 0.05)
+    end
+    # Leaf
+    Base.@kwdef mutable struct Leaf <: VPL.Node
+        length::Float64 = 0.20 # Leaves are 20 cm long
+        width::Float64  = 0.1 # Leaves are 10 cm wide
+        PARdif::Float64 = 0.0
+        PARdir::Float64 = 0.0
+        mat::VPL.Lambertian{1} = VPL.Lambertian(τ = 0.05, ρ = 0.1)
+        Ag::Float64 = 0.0
+    end    
+    # Graph-level variables
+    Base.@kwdef mutable struct treeparams
+        growth::Float64 = 0.1   
+        budbreak::Float64 = 0.25
+        phyllotaxis::Float64 = 140.0
+        leaf_angle::Float64 = 30.0
+        branch_angle::Float64 = 45.0
+        photos::Ecophys.C3{Float64} = Ecophys.C3()
+        Ag::Float64 = 0.0
+    end
+end
+
+import .TreeTypes
+
+# Create geometry + color for the internodes
+function VPL.feed!(turtle::Turtle, i::TreeTypes.Internode, vars)
+    # Rotate turtle around the head to implement elliptical phyllotaxis
+    rh!(turtle, vars.phyllotaxis) 
+    HollowCylinder!(turtle, length = i.length, height = i.length/15, width = i.length/15, 
+                move = true, color = RGB(0.5,0.4,0.0), material = i.mat)
+    return nothing
+end
+
+# Create geometry + color for the leaves
+function VPL.feed!(turtle::Turtle, l::TreeTypes.Leaf, vars)
+    # Rotate turtle around the arm for insertion angle
+    ra!(turtle, -vars.leaf_angle)
+    # Generate the leaf 
+    Ellipse!(turtle, length = l.length, width = l.width, move = false, 
+             color = RGB(0.2,0.6,0.2), material = l.mat)
+    # Rotate turtle back to original direction
+    ra!(turtle, vars.leaf_angle)
+    return nothing
+end
+
+# Insertion angle for the bud nodes
+function VPL.feed!(turtle::Turtle, b::TreeTypes.BudNode, vars)
+    # Rotate turtle around the arm for insertion angle
+    ra!(turtle, -vars.branch_angle)
+end
+
+
+# Rules
+meristem_rule = Rule(TreeTypes.Meristem, rhs = mer -> TreeTypes.Node() + 
+                                              (TreeTypes.Bud(), TreeTypes.Leaf()) +
+                                         TreeTypes.Internode() + TreeTypes.Meristem())
+
+function prob_break(bud)
+    # We move to parent node in the branch where the bud was created
+    node =  parent(bud)
+    # We count the number of internodes between node and the first Meristem 
+    # moving down the graph
+    check, steps = hasDescendent(node, condition = n -> data(n) isa TreeTypes.Meristem)
+    steps = Int(ceil(steps/2)) # Because it will count both the nodes and the internodes
+    # Compute probability of bud break and determine whether it happens
+    if check
+        prob =  min(1.0, steps*vars(bud).budbreak)
+        return rand() < prob
+    # If there is no meristem, an error happened since the model does not allow for this    
+    else
+        error("No meristem found in branch")
+    end
+end
+branch_rule = Rule(TreeTypes.Bud, 
+            lhs = prob_break, 
+            rhs = bud -> TreeTypes.BudNode() + TreeTypes.Internode() + TreeTypes.Meristem())
+
+function create_tree(origin, growth, budbreak, orientation)
+    axiom = T(origin) + RH(orientation) + TreeTypes.Internode() + TreeTypes.Meristem()
+    tree =  Graph(axiom = axiom, rules = (meristem_rule, branch_rule), 
+                  vars = TreeTypes.treeparams(growth = growth, budbreak = budbreak))
+    return tree
+end
+
+getInternode = Query(TreeTypes.Internode)
+
+function elongate!(tree, query)
+    for x in apply(tree, query)
+        x.length = x.length*(1.0 + vars(tree).growth)
+    end
+end
+
+function growth!(tree, query)
+    elongate!(tree, query)
+    rewrite!(tree)
+end
+
+function simulate(tree, query, nsteps)
+    new_tree = deepcopy(tree)
+    for i in 1:nsteps
+        growth!(new_tree, query)
+    end
+    return new_tree
+end
+origins = [Vec(i,j,0) for i = 1:2.0:20.0, j = 1:2.0:20.0]
+orientations = [rand()*360.0 for i = 1:2.0:20.0, j = 1:2.0:20.0]
+growths = rand(LogNormal(-2, 0.3), 10, 10)
+budbreaks = rand(Beta(2.0, 10), 10, 10)
+forest = vec(create_tree.(origins, growths, budbreaks, orientations));
+```
+
+We run the simulation for a few steps to create a forest and add the soil:
+
+```{julia}
+newforest = [simulate(tree, getInternode, 15) for tree in forest];
+scene = Scene(newforest);
+soil = Rectangle(length = 21.0, width = 21.0)
+rotatey!(soil, pi/2)
+VPL.translate!(soil, Vec(0.0, 10.5, 0.0))
+VPL.add!(scene, mesh = soil, color = RGB(1,1,0), 
+                material = Lambertian(τ = 0.0, ρ = 0.21))
+#render(scene, backend = "web", resolution = (800, 600))
+```
+
+Unlike in the previous example, we can no longer run a single raytracer to 
+compute daily photosynthesis, because of its non-linear response to irradiance.
+Instead, we need to compute photosynthesis at different timepoints during the
+day and integrate the results (e.g., using a Gaussian quadrature rule). However,
+this does not require more computation than the previous example if the calculations
+are done carefully to avoid redundancies.
+
+Firstly, we can create the bounding volume hierarchy and grid cloner around the
+scene once for the whole day:
+
+```{julia}
+settings = RTSettings(pkill = 0.8, maxiter = 3, nx = 5, ny = 5, dx = 20.0,
+                          dy = 20.0, parallel = true)
+acc_scene = accelerate(scene, settings = settings, acceleration = BVH,
+                       rule = SAH{6}(1,20));
+```
+
+Then we compute the relative fraction of diffuse PAR that reaches each leaf (once
+for the whole day):
+
+```{julia}
+get_leaves(tree) = apply(tree, Query(TreeTypes.Leaf))
+
+function calculate_diffuse!(;scene, acc_scene, forest, lat = 52.0*π/180.0, DOY = 182)
+    # Create the dome of diffuse light
+    dome = sky(scene, 
+                  Idir = 0.0, # No direct solar radiation
+                  Idif = 1.0, # In order to get relative values
+                  nrays_dif = 1_000_000, # Total number of rays for diffuse solar radiation
+                  sky_model = StandardSky, # Angular distribution of solar radiation
+                  dome_method = equal_solid_angles, # Discretization of the sky dome
+                  ntheta = 9, # Number of discretization steps in the zenith angle 
+                  nphi = 12) # Number of discretization steps in the azimuth angle
+    # Ray trace the scene
+    settings = RTSettings(pkill = 0.9, maxiter = 4, nx = 5, ny = 5, dx = 20.0,
+                          dy = 20.0, parallel = true)
+    # Because the acceleration was pre-computed, use direct RayTracer constructor
+    rtobj = RayTracer(acc_scene, materials(scene), dome, settings);
+    trace!(rtobj)
+    # Transfer power to PARdif
+    @threads for tree in forest
+        for leaf in get_leaves(tree)
+            leaf.PARdif = power(leaf.mat)[1]/(π*leaf.length*leaf.width/4)
+        end
+    end
+    return nothing
+end
+```
+
+Once the relative diffuse irradiance hsa been computed, we can loop over the
+day and compute direct PAR by using a single ray tracer and update photosynthesis
+from that. Notice that here we convert solar radiation to PAR in umol/m2/s as 
+opposed to W/m2 (using `:flux` rather than `:power` in the `waveband_conversion` 
+function):
+
+```{julia}
+function calculate_photosynthesis!(;scene, acc_scene, forest, lat = 52.0*π/180.0, DOY = 182, 
+                 f = 0.5, w = 0.5, DL = 12*3600)
+    # Compute the solar irradiance assuming clear sky conditions
+    Ig, Idir, Idif = clear_sky(lat = lat, DOY = DOY, f = f)
+    # Conversion factors to PAR for direct and diffuse irradiance
+    PARdir = Idir*waveband_conversion(Itype = :direct,  waveband = :PAR, mode = :flux)
+    PARdif = Idif*waveband_conversion(Itype = :diffuse, waveband = :PAR, mode = :flux)
+    # Create the light source for the ray tracer
+    dome = sky(scene, Idir = PARdir, nrays_dir = 100_000, Idif = 0.0)
+    # Ray trace the scene
+    settings = RTSettings(pkill = 0.9, maxiter = 4, nx = 5, ny = 5, dx = 20.0,
+                          dy = 20.0, parallel = true)
+    rtobj = RayTracer(acc_scene, materials(scene), dome, settings)
+    trace!(rtobj)
+    # Transfer power to PARdif
+    @threads for tree in forest
+        ph = vars(tree).photos
+        for leaf in get_leaves(tree)
+            leaf.PARdir = power(leaf.mat)[1]/(π*leaf.length*leaf.width/4)
+            leaf.PARdif = leaf.PARdif*PARdif
+            PAR = leaf.PARdir + leaf.PARdif
+            leaf.Ag += (photosynthesis(ph, PAR = PAR).A + ph.Rd25)*w*DL
+        end
+    end
+    return nothing
+end
+
+# Reset photosynthesis
+function reset_photosynthesis!(forest)
+    @threads for tree in forest
+        for leaf in get_leaves(tree)
+            leaf.Ag = 0.0
+        end
+    end
+    return nothing
+end
+```
+
+This function may now be ran for different timepoints during the day based on 
+a Gaussian quadrature rule:
+
+```{julia}
+function daily_photosynthesis(forest; DOY = 182, lat = 52.0*π/180.0)
+    # Compute fraction of diffuse irradiance per leaf
+    calculate_diffuse!(scene = scene, acc_scene = acc_scene, forest = forest,
+                        DOY = DOY, lat = lat);
+    # Gaussian quadrature over the 
+    NG = 5
+    f, w = gausslegendre(NG)
+    w ./= 2.0
+    f .= (f .+ 1.0)/2.0
+    # Reset photosynthesis
+    reset_photosynthesis!(forest)
+    # Loop over the day
+    dec = declination(DOY)
+    DL = day_length(lat, dec)*3600
+    for i in 1:NG
+        println("step $i out of $NG")
+        calculate_photosynthesis!(scene = scene, acc_scene = acc_scene, forest = forest, 
+                                  f = f[i], w = w[i], DL = DL, DOY = DOY, lat = lat)
+    end
+end
+```
+
+And we scale to the tree level with a simple query:
+
+```{julia}
+function canopy_photosynthesis!(forest)
+    # Integrate photosynthesis over the day at the leaf level
+    daily_photosynthesis(forest)
+    # Aggregate to the the tree level
+    Ag = Float64[]
+    for tree in forest
+        vars(tree).Ag = sum(leaf.Ag*π*leaf.length*leaf.width/4 for leaf in get_leaves(tree))
+        push!(Ag, vars(tree).Ag)
+    end
+    return Ag/1e6 # mol/tree
+end
+
+# Run the canopy photosynthesis model
+Ag = canopy_photosynthesis!(newforest);
+histogram(Ag)
+```
+
+
+## Tutorial 08: Ground cover calculations
+
+We use the previous simple model of the forest
+
+```{julia}
+using VPL
+using Distributions, Plots
+# Data types
+module TreeTypes
+    import VPL
+    # Meristem
+    struct Meristem <: VPL.Node end
+    # Bud
+    struct Bud <: VPL.Node end
+    # Node
+    struct Node <: VPL.Node end
+    # BudNode
+    struct BudNode <: VPL.Node end
+    # Internode (needs to be mutable to allow for changes over time)
+    Base.@kwdef mutable struct Internode <: VPL.Node
+        length::Float64 = 0.10 # Internodes start at 10 cm
+    end
+    # Leaf
+    Base.@kwdef struct Leaf <: VPL.Node
+        length::Float64 = 0.20 # Leaves are 20 cm long
+        width::Float64  = 0.1 # Leaves are 10 cm wide
+    end    
+    # Graph-level variables
+    Base.@kwdef struct treeparams
+        growth::Float64 = 0.1   
+        budbreak::Float64 = 0.25
+        phyllotaxis::Float64 = 140.0
+        leaf_angle::Float64 = 30.0
+        branch_angle::Float64 = 45.0
+    end
+end
+
+import .TreeTypes
+
+# Create geometry + color for the internodes
+function VPL.feed!(turtle::Turtle, i::TreeTypes.Internode, vars)
+    # Rotate turtle around the head to implement elliptical phyllotaxis
+    rh!(turtle, vars.phyllotaxis) 
+    HollowCylinder!(turtle, length = i.length, height = i.length/15, width = i.length/15, 
+                move = true, color = RGB(0.5,0.4,0.0))
+    return nothing
+end
+
+# Create geometry + color for the leaves
+function VPL.feed!(turtle::Turtle, l::TreeTypes.Leaf, vars)
+    # Rotate turtle around the arm for insertion angle
+    ra!(turtle, -vars.leaf_angle)
+    # Generate the leaf 
+    Ellipse!(turtle, length = l.length, width = l.width, move = false, 
+             color = RGB(0.2,0.6,0.2))
+    # Rotate turtle back to original direction
+    ra!(turtle, vars.leaf_angle)
+    return nothing
+end
+
+# Insertion angle for the bud nodes
+function VPL.feed!(turtle::Turtle, b::TreeTypes.BudNode, vars)
+    # Rotate turtle around the arm for insertion angle
+    ra!(turtle, -vars.branch_angle)
+end
+# Rules
+meristem_rule = Rule(TreeTypes.Meristem, rhs = mer -> TreeTypes.Node() + 
+                                              (TreeTypes.Bud(), TreeTypes.Leaf()) +
+                                         TreeTypes.Internode() + TreeTypes.Meristem())
+function prob_break(bud)
+    # We move to parent node in the branch where the bud was created
+    node =  parent(bud)
+    # We count the number of internodes between node and the first Meristem 
+    # moving down the graph
+    check, steps = hasDescendent(node, condition = n -> data(n) isa TreeTypes.Meristem)
+    steps = Int(ceil(steps/2)) # Because it will count both the nodes and the internodes
+    # Compute probability of bud break and determine whether it happens
+    if check
+        prob =  min(1.0, steps*vars(bud).budbreak)
+        return rand() < prob
+    # If there is no meristem, an error happened since the model does not allow for this    
+    else
+        error("No meristem found in branch")
+    end
+end
+branch_rule = Rule(TreeTypes.Bud, 
+            lhs = prob_break, 
+            rhs = bud -> TreeTypes.BudNode() + TreeTypes.Internode() + TreeTypes.Meristem())
+      
+function create_tree(origin, growth, budbreak, orientation)
+    axiom = T(origin) + RH(orientation) + TreeTypes.Internode() + TreeTypes.Meristem()
+    tree =  Graph(axiom = axiom, rules = (meristem_rule, branch_rule), 
+                  vars = TreeTypes.treeparams(growth = growth, budbreak = budbreak))
+    return tree
+end
+
+getInternode = Query(TreeTypes.Internode)
+
+function elongate!(tree, query)
+    for x in apply(tree, query)
+        x.length = x.length*(1.0 + vars(tree).growth)
+    end
+end
+
+function growth!(tree, query)
+    elongate!(tree, query)
+    rewrite!(tree)
+end
+
+function simulate(tree, query, nsteps)
+    new_tree = deepcopy(tree)
+    for i in 1:nsteps
+        growth!(new_tree, query)
+    end
+    return new_tree
+end
+
+origins = [Vec(i,j,0) for i = 1:2.0:20.0, j = 1:2.0:20.0]
+orientations = [rand()*360.0 for i = 1:2.0:20.0, j = 1:2.0:20.0]
+growths = rand(LogNormal(-2, 0.3), 10, 10)
+budbreaks = rand(Beta(2.0, 10), 10, 10)
+forest = vec(create_tree.(origins, growths, budbreaks, orientations));
+newforest = [simulate(tree, getInternode, 15) for tree in forest];
+render(newforest, backend = "web", resolution = (800,600), parallel = true)
+```
+
+To use the ray tracer to measure ground cover we just need to use `Black`
+materials for the leaves, add a soil tile (also with a black material) and
+use a directional radiation source that is vertical. The ratio between absorbed
+power and emmitted power in the soil will give you the ground cover.
+
+Since we are going to be using different types of ray tracers, we wil use the
+turtle message to use the right material in each case.
+
+```{julia}
+function choose_material(message)
+    if message == :original
+        nothing
+    elseif message == :ground_cover
+        Black()
+    else
+        error("The argument message must be :original or :ground_cover")
+    end
+end
+# Create geometry + color for the internodes
+function VPL.feed!(turtle::Turtle, i::TreeTypes.Internode, vars)
+    # Rotate turtle around the head to implement elliptical phyllotaxis
+    rh!(turtle, vars.phyllotaxis) 
+    HollowCylinder!(turtle, length = i.length, height = i.length/15, width = i.length/15, 
+                move = true, color = RGB(0.5,0.4,0.0), 
+                material = choose_material(turtle.message))
+    return nothing
+end
+
+# Create geometry + color for the leaves
+function VPL.feed!(turtle::Turtle, l::TreeTypes.Leaf, vars)
+    # Rotate turtle around the arm for insertion angle
+    ra!(turtle, -vars.leaf_angle)
+    # Generate the leaf 
+    Ellipse!(turtle, length = l.length, width = l.width, move = false, 
+             color = RGB(0.2,0.6,0.2), material = choose_material(turtle.message))
+    # Rotate turtle back to original direction
+    ra!(turtle, vars.leaf_angle)
+    return nothing
+end
+```
+
+We create a scene with the right message and add a soil tile:
+
+```{julia}
+scene = Scene(newforest, message = :ground_cover)
+soil = Rectangle(length = 21.0, width = 21.0)
+rotatey!(soil, pi/2)
+VPL.translate!(soil, Vec(0.0, 10.5, 0.0))
+soil_mat = Black()
+VPL.add!(scene, mesh = soil, material = soil_mat)
+```
+
+We now add a single vertical source on top of the scene
+
+```{julia}
+source = DirectionalSource(scene, θ = 0.0, Φ = 0.0, radiosity = 1.0, nrays = 1_000_000)
+```
+
+And we run the ray tracer without grid cloner (no need for vertical source and
+black materials, just ignore the warning!)
+
+```{julia}
+settings = RTSettings(nx = 0, ny = 0, parallel = true)
+rtobj = RayTracer(scene, source, settings = settings, acceleration = BVH,
+                     rule = SAH{6}(1,20));
+trace!(rtobj)
+```
+
+And the ground cover is just the total power absorbed by the soil tile scaled
+by the emmitted power:
+
+```{julia}
+1 - power(soil_mat)[1]/1_000_000/source.power[1]
+```
+
